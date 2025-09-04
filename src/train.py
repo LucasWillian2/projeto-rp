@@ -227,7 +227,7 @@ def main():
         'batch_size': 16,  # Reduzido para evitar problemas de memória
         'learning_rate': 1e-4,
         'weight_decay': 1e-4,
-        'epochs': 2,  # Reduzido para demonstração
+        'epochs': 10,  # Reduzido para demonstração
         'img_size': 224,
         'num_workers': 2  # Reduzido para Windows
     }
