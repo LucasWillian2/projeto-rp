@@ -503,15 +503,29 @@ def main():
     except Exception as e:
         print(f"❌ Erro ao carregar Swin: {e}")
 
+    # Tentar carregar DeiT
+    try:
+        deit_path = "models/best_deit.pth"
+        if os.path.exists(deit_path):
+            deit_model = get_model(RECOMMENDED_MODELS["DeiT"], num_classes=len(classes))
+            checkpoint = torch.load(deit_path, map_location='cpu')
+            deit_model.load_state_dict(checkpoint['model_state_dict'])
+            deit_model.eval()
+            models_to_compare["DeiT"] = deit_model
+            print(f"✅ Modelo DeiT carregado com sucesso!")
+    except Exception as e:
+        print(f"❌ Erro ao carregar DeiT: {e}")
+
     if len(models_to_compare) >= 2:
         print(f"\n🎯 Executando comparação de GradCAM entre {len(models_to_compare)} modelos...")
+        print(f"📊 Modelos disponíveis: {list(models_to_compare.keys())}")
 
         # Executar comparação de 2 imagens
         compare_gradcam_two_images(
             models=models_to_compare,
             dataloader=val_loader,
             num_images=2,
-            save_path="gradcam_two_images_comparison.png",
+            save_path="gradcam_three_models_comparison.png",
             class_names=classes
         )
 
