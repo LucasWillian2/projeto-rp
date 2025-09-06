@@ -100,8 +100,8 @@ class ModelComparator:
                     avg_confidence = 0.0
 
                 per_class[class_name] = {
-                    'accuracy': class_acc,
-                    'avg_confidence': avg_confidence,
+                    'accuracy': float(class_acc),
+                    'avg_confidence': float(avg_confidence),
                     'samples': int(np.sum(mask))
                 }
 
@@ -249,12 +249,21 @@ class ModelComparator:
         # Converter numpy arrays para listas para serialização
         results_to_save = {}
         for model_name, result in self.results.items():
+            # Converter per_class_metrics para tipos Python nativos
+            per_class_metrics_clean = {}
+            for class_name, metrics in result['per_class_metrics'].items():
+                per_class_metrics_clean[class_name] = {
+                    'accuracy': float(metrics['accuracy']),
+                    'avg_confidence': float(metrics['avg_confidence']),
+                    'samples': int(metrics['samples'])
+                }
+
             results_to_save[model_name] = {
                 'accuracy': float(result['accuracy']),
                 'avg_inference_time': float(result['avg_inference_time']),
                 'confusion_matrix': result['confusion_matrix'].tolist(),
                 'classification_report': result['classification_report'],
-                'per_class_metrics': result['per_class_metrics']
+                'per_class_metrics': per_class_metrics_clean
             }
 
         # Salvar resultados principais
@@ -278,7 +287,7 @@ class ModelComparator:
 
 def load_trained_models(model_names, models_dir="models"):
     """Carrega modelos treinados"""
-    from models import get_model, RECOMMENDED_MODELS
+    from .models import get_model, RECOMMENDED_MODELS
 
     loaded_models = {}
 
@@ -313,7 +322,7 @@ def main():
     print(f"Usando dispositivo: {device}")
 
     # Carregar dados
-    from data_preparation import get_data_loaders
+    from .data_preparation import get_data_loaders
 
     data_dir = "data"
     _, val_loader, classes = get_data_loaders(
