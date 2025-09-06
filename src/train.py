@@ -201,7 +201,7 @@ class Trainer:
 
 def train_model(model_name, model_path, train_loader, val_loader, device, config):
     """Função para treinar um modelo específico"""
-    from models import get_model
+    from .models import get_model
 
     print(f"\n{'='*50}")
     print(f"TREINANDO MODELO: {model_name}")
@@ -227,13 +227,13 @@ def main():
         'batch_size': 16,  # Reduzido para evitar problemas de memória
         'learning_rate': 1e-4,
         'weight_decay': 1e-4,
-        'epochs': 10,  # Reduzido para demonstração
+        'epochs': 2,  # Reduzido para demonstração
         'img_size': 224,
         'num_workers': 2  # Reduzido para Windows
     }
 
     # Carregar dados
-    from data_preparation import get_data_loaders
+    from .data_preparation import get_data_loaders
 
     data_dir = "data"
     train_loader, val_loader, classes = get_data_loaders(
@@ -253,10 +253,10 @@ def main():
     print(f"Usando dispositivo: {device}")
 
     # Modelos para treinar (escolha 2 para comparar)
-    from models import RECOMMENDED_MODELS
+    from .models import RECOMMENDED_MODELS
 
     models_to_train = {
-        "ViT": RECOMMENDED_MODELS["ViT"],
+        "DeiT": RECOMMENDED_MODELS["DeiT"],
         "Swin": RECOMMENDED_MODELS["Swin"]
     }
 
