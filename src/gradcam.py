@@ -300,59 +300,6 @@ if __name__ == "__main__":
         print(f"Erro ao testar GradCAM: {e}")
         print("Certifique-se de que o modelo foi treinado primeiro.")
 
-# Exemplo de uso
-if __name__ == "__main__":
-    from models import get_model, RECOMMENDED_MODELS
-    from data_preparation import get_data_loaders
-
-    # Carregar dados
-    data_dir = "data"
-    _, val_loader, classes = get_data_loaders(data_dir, batch_size=4, num_workers=2)
-
-    # Carregar modelo treinado (se existir)
-    model_name = "ViT"
-    model_path = RECOMMENDED_MODELS[model_name]
-
-    try:
-        model = get_model(model_path, num_classes=len(classes))
-
-        # Carregar pesos treinados se existirem
-        weight_path = f"models/best_{model_name.lower()}.pth"
-        if os.path.exists(weight_path):
-            checkpoint = torch.load(weight_path, map_location='cpu')
-            model.load_state_dict(checkpoint['model_state_dict'])
-            print(f"Pesos carregados de {weight_path}")
-
-        model.eval()
-
-        # Encontrar camada alvo
-        target_layer = find_target_layer(model)
-
-        # Testar GradCAM
-        gradcam = GradCAM(model, target_layer)
-
-        # Pegar uma amostra do dataset
-        for images, labels in val_loader:
-            img = images[0:1]
-            label = labels[0]
-
-            print(f"Testando GradCAM para classe: {classes[label]}")
-
-            # Gerar visualização
-            cam, overlay = gradcam.visualize(
-                img,
-                target_class=label,
-                save_path=f"gradcam_test_{model_name}.png",
-                class_names=classes
-            )
-            break
-
-        gradcam.remove_hooks()
-
-    except Exception as e:
-        print(f"Erro ao testar GradCAM: {e}")
-        print("Certifique-se de que o modelo foi treinado primeiro.")
-
 def compare_gradcam_two_images(models, dataloader, num_images=2, save_path="gradcam_two_images_comparison.png", class_names=None):
     """
     Compara GradCAM de 2 imagens de teste entre diferentes modelos
