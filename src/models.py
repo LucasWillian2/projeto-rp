@@ -24,7 +24,6 @@ class HuggingFaceModel(nn.Module):
     def forward(self, x):
         return self.model(x).logits
 
-# Alias para compatibilidade - VisionTransformer agora é apenas um alias
 VisionTransformer = HuggingFaceModel
 
 def get_model(model_name, num_classes, model_type="huggingface"):
@@ -36,7 +35,7 @@ def get_model(model_name, num_classes, model_type="huggingface"):
     else:
         raise ValueError(f"Tipo de modelo não suportado: {model_type}")
 
-# Modelos recomendados para teste - escolha 2 para comparar
+
 RECOMMENDED_MODELS = {
     "ViT": "google/vit-base-patch16-224",
     "Swin": "microsoft/swin-tiny-patch4-window7-224",
