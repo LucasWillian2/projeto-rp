@@ -4,46 +4,28 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 import torch.nn.functional as F
 
 class HuggingFaceModel(nn.Module):
+    """Modelo base para modelos do Hugging Face Transformers"""
     def __init__(self, model_name, num_classes, freeze_backbone=False):
         super().__init__()
-        self.processor = AutoImageProcessor.from_pretrained(model_name)
-        self.model = AutoModelForImageClassification.from_pretrained(
-            model_name,
-            num_labels=num_classes,
-            ignore_mismatched_sizes=True
-        )
+        self.processor, self.model = _load_model_components(model_name, num_classes)
 
         if freeze_backbone:
-            for param in self.model.parameters():
-                param.requires_grad = False
+            self._freeze_backbone()
 
-            # Descongelar apenas a camada de classificação
-            for param in self.model.classifier.parameters():
-                param.requires_grad = True
+    def _freeze_backbone(self):
+        """Congela todos os parâmetros exceto a camada de classificação"""
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        # Descongelar apenas a camada de classificação
+        for param in self.model.classifier.parameters():
+            param.requires_grad = True
 
     def forward(self, x):
         return self.model(x).logits
 
-class VisionTransformer(nn.Module):
-    def __init__(self, model_name, num_classes, freeze_backbone=False):
-        super().__init__()
-        self.processor = AutoImageProcessor.from_pretrained(model_name)
-        self.model = AutoModelForImageClassification.from_pretrained(
-            model_name,
-            num_labels=num_classes,
-            ignore_mismatched_sizes=True
-        )
-
-        if freeze_backbone:
-            for param in self.model.parameters():
-                param.requires_grad = False
-
-            # Descongelar apenas a camada de classificação
-            for param in self.model.classifier.parameters():
-                param.requires_grad = True
-
-    def forward(self, x):
-        return self.model(x).logits
+# Alias para compatibilidade - VisionTransformer agora é apenas um alias
+VisionTransformer = HuggingFaceModel
 
 def get_model(model_name, num_classes, model_type="huggingface"):
     """Retorna o modelo configurado"""
@@ -62,11 +44,25 @@ RECOMMENDED_MODELS = {
     "DeiT": "facebook/deit-base-distilled-patch16-224"
 }
 
+def _load_model_components(model_name, num_classes=None):
+    """Função auxiliar para carregar componentes do modelo"""
+    processor = AutoImageProcessor.from_pretrained(model_name)
+
+    if num_classes:
+        model = AutoModelForImageClassification.from_pretrained(
+            model_name,
+            num_labels=num_classes,
+            ignore_mismatched_sizes=True
+        )
+    else:
+        model = AutoModelForImageClassification.from_pretrained(model_name)
+
+    return processor, model
+
 def get_model_info(model_name):
     """Retorna informações sobre o modelo"""
     try:
-        processor = AutoImageProcessor.from_pretrained(model_name)
-        model = AutoModelForImageClassification.from_pretrained(model_name)
+        processor, model = _load_model_components(model_name)
 
         # Contar parâmetros
         total_params = sum(p.numel() for p in model.parameters())
